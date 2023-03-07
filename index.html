@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barra del watcher</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/lumen/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container p-4">
+        <div class="">
+            <div class="container">
+                <div class="mr-2">
+                     <!-- <h4>2hrs|3hrs|4hrs|5hrs|6hrs|7hrs|8hrs|9hrs|10hr|11hr|12hr|13hr|14hr|15hr|16hr|17hr|18hr|19hr|20hr|21hr|22hr|23hr|00hr|1hrs|2hrs</h4> -->
+                </div>
+                <div class="progress-stacked" id="coma">
+                    <!-- <div class='progress border border-white' id='barrita' role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .69%'>
+                        <div class='progress-bar progress-bar-striped progress-bar-animated'></div>
+                    </div> -->
+                </div><br><input type="date" value="2023-02-06" id="fecha"><br><br>
+                <!-- <h4><span style="font-size:23.5px">2hrs|3hrs|4hrs|5hrs|6hrs|7hrs|8hrs|9hrs|10hr|11ihr|12hr|13hr|14hr|15hr|16hr|17hr|18hr|19hr|20hr|21hr|22hr|23hr|00hr|1hrs</span></h4> -->
+                <div class="hstack" id="horario"></div>
+                <div class="progress-stacked" id="como"></div><br>
+                <div class="hstack" id="horario2"></div>
+                <div class="progress-stacked" id="como2"></div><br>
+                <button onclick="obtenerFecha()">Primary</button>
+                <p id="demo"></p>
+                <script>
+                    function obtenerFecha(){
+                        var date = document.getElementById("fecha").value;
+                        console.log(date);
+                        var arr = date.split('-');
+                        var sub = arr[0]+arr[1]+arr[2];
+                        console.log(sub);
+                        //crearBarrita();
+                    }
+                </script>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getFirestore,query,onSnapshot,collection,doc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
+        const firebaseConfig = {
+          apiKey: "AIzaSyAYfWt4oqWU9rJU43fpEamGs3TgARPHgK0",
+          authDomain: "prueba-9aedb.firebaseapp.com",
+          databaseURL: "https://prueba-9aedb-default-rtdb.firebaseio.com",
+          projectId: "prueba-9aedb",
+          storageBucket: "prueba-9aedb.appspot.com",
+          messagingSenderId: "647554982451",
+          appId: "1:647554982451:web:1c0283a9b5f97afb367946",
+          measurementId: "G-YPHQPD2MGB"
+        };
+        var arr = [];
+        
+        var date = document.getElementById("fecha").value;
+        var arr = date.split('-');
+        var sub = arr[0]+arr[1]+arr[2];
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db=getFirestore(app);
+
+        //Escucha los cambios de una coleccion
+        function crearBarrita(j){
+            const q = query(collection(db, "Azteca7/"+sub+"/archivos"));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    //console.log(change.doc.id);
+                    if (change.type === "added") {
+                        console.log("New data: ", change.doc.data());
+                        if(change.doc.data().Status === "1"){
+                            $("#coma").append("<div class='progress border border-white' id='barrita' role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .69%'><div class='progress-bar progress-bar-striped progress-bar-animated'></div></div>");
+                            arr.push(change.doc.data());
+                            //barrita de abajo
+                            var id = change.doc.data().id;
+                            $("#m"+id).css("background-color","#14EB24");
+                            $("#m"+id).removeAttr("data-bs-content");
+                            $("#m"+id).attr("data-bs-content","Nombre: "+change.doc.data().Nombre);
+                            $("#m"+id).removeClass("bg-body-tertiary");
+                        }
+                        if(change.doc.data().Status === "0"){
+                            var id = change.doc.data().id;
+                            $("#coma").append("<div class='progress border border-white' id='barrita' role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .69%'><div class='progress-bar progress-bar-striped bg-danger progress-bar-animated'></div></div>");
+                            arr.push(change.doc.data());
+                            //barrita de abajo
+                            $("#m"+id).css("background-color","red");
+                            $("#m"+id).removeAttr("data-bs-content");
+                            $("#m"+id).attr("data-bs-content","Nombre: "+change.doc.data().Nombre);
+                            $("#m"+id).removeClass("bg-body-tertiary");
+                        }
+                    }
+                    if (change.type === "removed") {
+                        console.log("Removed data: ", change.doc.data());
+                    }
+                });
+                const tot = arr.length;
+                console.log(tot);
+            });
+
+            for(let i=1;i<=5;i++){
+                $(".container").append("<div class='progress-stacked' id='como"+i+"'></div><br>");
+            }
+            //prueba for de 144 divs
+            let container = document.querySelector('.progress')
+            for (let i=13;i<=144;i++){
+                $("#como"+j).append("<div class='progress border'  role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .70%'><div id='m"+i+"' class='progress-bar progress-bar-striped bg-body-tertiary progress-bar-animated' data-bs-toggle='popover' data-bs-trigger='hover focus' data-bs-placement='bottom' data-bs-content='Minuto id: "+i+"'></div></div>");
+            }
+            for (let i=1;i<13;i++){
+                $("#como"+j).append("<div class='progress border' role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .70%'><div id='m"+i+"' class='progress-bar progress-bar-striped bg-body-tertiary progress-bar-animated' data-bs-toggle='popover' data-bs-trigger='hover focus' data-bs-placement='bottom' data-bs-content='Minuto id: "+i+"'></div></div>");
+            }
+
+            //divs de horas
+            for(let i=2;i<10;i++){
+                $("#horario").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>0"+i+"hrs</div>");
+            }
+            for(let i=10;i<24;i++){
+                $("#horario").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>"+i+"hrs</div>");
+            }
+            for(let i=0;i<2;i++){
+                $("#horario").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>0"+i+"hrs</div>");
+            }
+        };
+        
+        for(var j=1;j<=1;j++){
+            crearBarrita(j);
+        }
+
+
+
+        // segunda barra ---------------------------------------------------
+        const q2 = query(collection(db, "AztecaUno/20230228/archivos"));
+        const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if(change.type === "added"){
+                    console.log("New data: ", change.doc.data());
+                    if(change.doc.data().Status === "1"){
+                        var id = change.doc.data().id;
+                        $("#2m"+id).css("background-color","#14EB24");
+                        $("#2m"+id).removeAttr("data-bs-content");
+                        $("#2m"+id).attr("data-bs-content","Nombre: "+change.doc.data().Nombre);
+                        $("#2m"+id).removeClass("bg-body-tertiary");
+                    }
+                    if(change.doc.data().Status === "0"){
+                        $("#2m"+id).css("background-color","red");
+                        $("#2m"+id).removeAttr("data-bs-content");
+                        $("#2m"+id).attr("data-bs-content","Nombre: "+change.doc.data().Nombre);
+                        $("#2m"+id).removeClass("bg-body-tertiary");
+                    }
+                }
+                if(change.type === "removed"){
+                    console.log("Removed data: ", change.doc.data());
+                }
+            });
+        });
+
+    
+    const analytics = getAnalytics(app);
+
+    //prueba replace jqery con boton
+    var id = 127;
+
+    
+    //--------------------------
+    // for (let i=13;i<=144;i++){
+    //     $("#como2").append("<div class='progress border'  role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .70%'><div id='2m"+i+"' class='progress-bar progress-bar-striped bg-body-tertiary progress-bar-animated' data-bs-toggle='popover' data-bs-trigger='hover focus' data-bs-placement='bottom' data-bs-content='Minuto id: "+i+"'></div></div>");
+    // }
+    // for (let i=1;i<13;i++){
+    //     $("#como2").append("<div class='progress border' role='progressbar' aria-label='Segment one' aria-valuenow='15' aria-valuemin='0' aria-valuemax='100' style='width: .70%'><div id='2m"+i+"' class='progress-bar progress-bar-striped bg-body-tertiary progress-bar-animated' data-bs-toggle='popover' data-bs-trigger='hover focus' data-bs-placement='bottom' data-bs-content='Minuto id: "+i+"'></div></div>");
+    // }
+
+    
+    //-----------------------
+    for(let i=2;i<10;i++){
+        $("#horario2").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>0"+i+"hrs</div>");
+    }
+    for(let i=10;i<24;i++){
+        $("#horario2").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>"+i+"hrs</div>");
+    }
+    for(let i=0;i<2;i++){
+        $("#horario2").append("<div class='border-start border-dark' style='width: 4.2%; height: 30px;'>0"+i+"hrs</div>");
+    }
+
+    //$("#2m88").attr("data-bs-content","Nombre: ");
+
+    //popover
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous"></script>
+</body>
+</html>
